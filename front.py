@@ -4,7 +4,12 @@ from PyQt5.QtGui import QPixmap, QFont, QColor
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, QComboBox, \
     QColorDialog, QFileDialog, QFrame
 
-
+# TODO - na kliknięcie "wygeneruj obraz" ma się wywołać funkcja z maina,
+#  która przyjmuje ścieżkę wczytaną z wyboru pliku,
+#  alphę przeskalowaną do [0-1] i kolor (tablica trzyelementowa 0-255) i co chcemy pokolorować,
+#  a zwraca obraz z nałożoną maską,
+#  który jest potem wyświetlany w programie
+# TODO - dorobić checkboxy (radioboxy?) z wyborem klas (klasy?), które chcemy nałożyć
 class MyWindow(QWidget):
     def __init__(self):
         super().__init__()
