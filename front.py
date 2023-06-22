@@ -1,6 +1,5 @@
 import sys
 import traceback
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage, QColor, QPalette
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, QComboBox, \
@@ -9,6 +8,11 @@ import main
 import numpy as np
 from PIL import Image as im
 from PIL.ImageQt import ImageQt
+
+# TODO - po wybraniu alfy resetuje się kolor
+# TODO - po kliknięciu wygenerowania bez wrzuconego obrazka wywala się program
+# TODO - zrobić wybór okna/drzwi/okna+drzwi
+# TODO - wybór drugiego koloru
 
 class MyWindow(QWidget):
     def __init__(self):
@@ -164,6 +168,7 @@ class MyWindow(QWidget):
 
         try:
             result_image = main.add_mask(self.file_path, alpha, color_array, color_array, segment)
+
             pil_image = im.fromarray(result_image)
             qimage = ImageQt(pil_image)
             pixmap = QPixmap.fromImage(qimage)
