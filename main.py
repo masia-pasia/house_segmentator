@@ -5,14 +5,9 @@ import rendering
 import matplotlib.pyplot as plt
 
 
-# TODO - zawrzeć poniższe w funkcję, która jako argumenty przyjmuje z fronta filepath, alphę (przeskalowane 0-1),
-#  kolor (najlepiej jako tablicę 3 elementową 0-255) i co chcemy pokolorować - done
-# TODO - zrobić odpowiednią maskę zależnie od wybranego segmentu - done
 # TODO - rozbić funckję tak, by np alpha mogła zmieniać się niezależnie bez potrzeby generowania nowego obrazka
 
-
 def add_mask(img_path, alpha, color, color2, segment):
-
     img = cv2.imread(img_path)
     img = cv2.resize(img, (1024, 1024))
     mask = rendering.process_image(img_path)
@@ -24,7 +19,8 @@ def add_mask(img_path, alpha, color, color2, segment):
 
     roof_mask = binary_mask_1 - binary_mask_2
     window_mask = binary_mask_2 - binary_mask_3
-
+    b, g, r = cv2.split(img)
+    img = cv2.merge((r, g, b))
     img_with_mask = np.copy(img)
 
     match segment:
