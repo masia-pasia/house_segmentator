@@ -3,20 +3,16 @@ import traceback
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage, QColor, QPalette
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, QComboBox, \
-    QColorDialog, QFileDialog, QFrame
+    QColorDialog, QFileDialog, QFrame, QRadioButton
 import main
 import numpy as np
 from PIL import Image as im
 from PIL.ImageQt import ImageQt
 
-# TODO - po wybraniu alfy resetuje się kolor
-# TODO - po kliknięciu wygenerowania bez wrzuconego obrazka wywala się program
-# TODO - zrobić wybór okna/drzwi/okna+drzwi
-# TODO - wybór drugiego koloru
-
 class MyWindow(QWidget):
     def __init__(self):
         super().__init__()
+        self.segment = 0
 
         # Ustawienia okna
         self.setWindowTitle("House segmenter app")
@@ -50,7 +46,7 @@ class MyWindow(QWidget):
 
         # Wczytywanie obrazów
         pixmap1 = QPixmap("dom.jpg").scaled(512, 512)
-        pixmap2 = QPixmap("dom.jpg").scaled(512, 512)
+        pixmap2 = QPixmap("brak_domu.jpg").scaled(512, 512)
         pixmap3 = QPixmap("strzalka.png").scaledToHeight(150, Qt.SmoothTransformation)
 
         # Wyświetlanie obrazów
@@ -67,6 +63,23 @@ class MyWindow(QWidget):
         button_select_image.setStyleSheet("QPushButton { background-color: navy; color: white; }")
         button_select_image.clicked.connect(self.select_image)
 
+        hbox = QHBoxLayout()
+        # Tworzenie etykiety
+        label = QLabel('Wybierz kolorowany element:')
+        # Tworzenie trzech radioboxy
+        self.radio1 = QRadioButton('okna')
+        self.radio2 = QRadioButton('dach')
+        self.radio3 = QRadioButton('okna i dach')
+        # Łączenie przycisków z funkcjami
+        self.radio1.toggled.connect(self.radio_connect)
+        self.radio2.toggled.connect(self.radio_connect)
+        self.radio3.toggled.connect(self.radio_connect)
+        # Dodawanie etykiety i radioboxów do układu poziomego
+        hbox.addWidget(label)
+        hbox.addWidget(self.radio1)
+        hbox.addWidget(self.radio2)
+        hbox.addWidget(self.radio3)
+
         # Tworzenie slidera
         slider_layout = QHBoxLayout()
         slider_label = QLabel("Współczynnik alfa:")
@@ -78,18 +91,31 @@ class MyWindow(QWidget):
         slider_layout.addWidget(slider_label)
         slider_layout.addWidget(self.slider)
 
-        # Pole z aktualnie wybranym kolorem
+        # Pole z aktualnie wybranym kolorem wybieraka 1
         self.color_preview_label = QLabel()
         self.color_preview_label.setFixedWidth(50)
         self.color_preview_label.setFixedHeight(20)
         self.update_color_preview(QColor("white"), self.slider.value())
 
-        # Tworzenie kolorowego wybieraka
+        # Tworzenie kolorowego wybieraka 1
         color_picker_layout = QHBoxLayout()
-        color_picker = QPushButton("Wybierz kolor")
+        color_picker = QPushButton("Wybierz kolor okien")
         color_picker.clicked.connect(self.choose_color)
         color_picker_layout.addWidget(color_picker)
         color_picker_layout.addWidget(self.color_preview_label)
+
+        # Pole z aktualnie wybranym kolorem wybieraka 2
+        self.color_preview_label2 = QLabel()
+        self.color_preview_label2.setFixedWidth(50)
+        self.color_preview_label2.setFixedHeight(20)
+        self.update_color_preview2(QColor("white"), self.slider.value())
+
+        # Tworzenie kolorowego wybieraka 2
+        color_picker_layout2 = QHBoxLayout()
+        color_picker2 = QPushButton("Wybierz kolor dachu")
+        color_picker2.clicked.connect(self.choose_color2)
+        color_picker_layout2.addWidget(color_picker2)
+        color_picker_layout2.addWidget(self.color_preview_label2)
 
         # Tworzenie przycisku "Wygeneruj obraz"
         button_submit = QPushButton("Wygeneruj obraz")
@@ -97,6 +123,7 @@ class MyWindow(QWidget):
 
         # Tworzenie drugiej kolumny przycisków
         button1 = QPushButton("Zapisz obraz")
+        button1.clicked.connect(self.save_image)
 
         # Dodawanie przycisku wyboru obrazu
         title_layout.addWidget(QLabel(" "))
@@ -105,8 +132,10 @@ class MyWindow(QWidget):
 
         # Dodawanie widżetów do odpowiednich layoutów
         left_column_layout.addWidget(self.image_label1, alignment=Qt.AlignTop)
+        left_column_layout.addLayout(hbox)
         left_column_layout.addLayout(slider_layout)
         left_column_layout.addLayout(color_picker_layout)
+        left_column_layout.addLayout(color_picker_layout2)
         left_column_layout.addWidget(button_submit)
 
         middle_column_layout.addWidget(QLabel("\n\n\n\n\n\n\n\n"))
@@ -127,12 +156,12 @@ class MyWindow(QWidget):
         self.setLayout(layout)
 
         # Połączenie zdarzenia zmiany wartości slidera z aktualizacją podglądu koloru
-        self.slider.valueChanged.connect(lambda value: self.update_color_preview(QColor("white"), value))
+        # self.slider.valueChanged.connect(lambda value: self.update_color_preview(QColor("white"), value))
 
         # Połączenie zdarzenia generowania obrazu z funkcją
         button_submit.clicked.connect(self.generate_image)
 
-        self.file_path = ''
+        self.file_path = './dom.jpg'
 
     def select_image(self):
         file_dialog = QFileDialog()
@@ -154,20 +183,31 @@ class MyWindow(QWidget):
         if color.isValid():
             self.update_color_preview(color, self.slider.value())
 
+    def choose_color2(self):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            self.update_color_preview2(color, self.slider.value())
+
     def update_color_preview(self, color, alpha):
         rgba_color = QColor(color.red(), color.green(), color.blue(), alpha)
         style_sheet = f"background-color: {rgba_color.name()}"
         self.color_preview_label.setStyleSheet(style_sheet)
 
+    def update_color_preview2(self, color, alpha):
+        rgba_color = QColor(color.red(), color.green(), color.blue(), alpha)
+        style_sheet = f"background-color: {rgba_color.name()}"
+        self.color_preview_label2.setStyleSheet(style_sheet)
+
     def generate_image(self):
         alpha = self.slider.value() / 100.0
         color = self.color_preview_label.palette().color(QPalette.Background)
         color_array = [color.red(), color.green(), color.blue()]
-        segment = 1
-        print(self.file_path, alpha, color_array, segment)
+        color2 = self.color_preview_label2.palette().color(QPalette.Background)
+        color_array2 = [color2.red(), color2.green(), color2.blue()]
+        print(self.file_path, alpha, color_array,color_array2, self.segment)
 
         try:
-            result_image = main.add_mask(self.file_path, alpha, color_array, color_array, segment)
+            result_image = main.add_mask(self.file_path, alpha, color_array, color_array2, self.segment)
 
             pil_image = im.fromarray(result_image)
             qimage = ImageQt(pil_image)
@@ -178,6 +218,30 @@ class MyWindow(QWidget):
 
         self.image_label2.setPixmap(pixmap.scaled(512, 512, Qt.KeepAspectRatio))
 
+    def radio_connect(self):
+        if self.radio1.isChecked():
+            self.segment = 0
+        elif self.radio2.isChecked():
+            self.segment = 1
+        elif self.radio3.isChecked():
+            self.segment = 2
+        else:
+            print('Błąd wyboru radioboxa')
+
+    def save_image(self):
+        file_dialog = QFileDialog()
+        file_dialog.setFileMode(QFileDialog.AnyFile)
+        file_dialog.setAcceptMode(QFileDialog.AcceptSave)
+        file_dialog.setDefaultSuffix("png")
+        file_dialog.setNameFilter("Obrazy (*.png)")
+
+        if file_dialog.exec_():
+            selected_files = file_dialog.selectedFiles()
+            file_path = selected_files[0]
+            print("Zapisano plik:", file_path)
+
+            pixmap = self.image_label2.pixmap()
+            pixmap.save(file_path, "PNG")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
