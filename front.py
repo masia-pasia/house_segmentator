@@ -1,12 +1,15 @@
 import sys
 import traceback
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QImage, QColor, QPalette, QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, QComboBox, \
-    QColorDialog, QFileDialog, QFrame, QRadioButton
-import main
+
 from PIL import Image as im
 from PIL.ImageQt import ImageQt
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QColor, QPalette, QIcon
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, \
+    QColorDialog, QFileDialog, QFrame, QRadioButton
+
+import main
+
 
 class MyWindow(QWidget):
     def __init__(self):
@@ -26,9 +29,11 @@ class MyWindow(QWidget):
         # Towrzenie title layoutu
         title_layout = QVBoxLayout()
         title_frame = QFrame()
+        title_frame.setStyleSheet("background-color: gray;")
         title_frame_layout = QVBoxLayout()
 
-        title_label = QLabel("<font color='yellow'><b><font size='+10' face='Georgia' >House Segmenter</font></b></font>")
+        title_label = QLabel(
+            "<font color='yellow'><b><font size='+10' face='Georgia' >House Segmenter</font></b></font>")
         title_label.setStyleSheet(
             "font-family: verdana; font-size: 15px; color: #404040; font-style: normal; font-weight: bold; "
             "font-variant: small-caps; text-align: left; letter-spacing: 3px; line-height: 20px; "
@@ -84,6 +89,7 @@ class MyWindow(QWidget):
         # Łączenie przycisków z funkcjami
         self.radio1.toggled.connect(self.radio_connect)
         self.radio2.toggled.connect(self.radio_connect)
+        self.radio3.toggled.connect(self.radio_connect)
         self.radio3.toggled.connect(self.radio_connect)
         # Dodawanie etykiety i radioboxów do układu poziomego
         hbox.addWidget(label)
@@ -255,6 +261,7 @@ class MyWindow(QWidget):
 
             pixmap = self.image_label2.pixmap()
             pixmap.save(file_path, "PNG")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

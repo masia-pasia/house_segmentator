@@ -2,10 +2,7 @@ import cv2
 import numpy as np
 import torchvision.transforms as T
 import rendering
-import matplotlib.pyplot as plt
 
-
-# TODO - rozbić funckję tak, by np alpha mogła zmieniać się niezależnie bez potrzeby generowania nowego obrazka
 
 def add_mask(img_path, alpha, color, color2, segment):
     img = cv2.imread(img_path)
@@ -50,11 +47,4 @@ def add_mask(img_path, alpha, color, color2, segment):
             return 0
 
     img_with_mask = cv2.addWeighted(img_with_mask, alpha, img, 1.0 - alpha, 0)
-    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
-    ax[0].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    ax[1].imshow(cv2.cvtColor(img_with_mask, cv2.COLOR_BGR2RGB))
-    plt.show()
     return img_with_mask
-
-
-add_mask('./dom.jpg', 0.2, [180, 0, 255], [30, 100, 20], 0)
