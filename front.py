@@ -1,11 +1,10 @@
 import sys
 import traceback
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QImage, QColor, QPalette
+from PyQt5.QtGui import QPixmap, QImage, QColor, QPalette, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, QComboBox, \
     QColorDialog, QFileDialog, QFrame, QRadioButton
 import main
-import numpy as np
 from PIL import Image as im
 from PIL.ImageQt import ImageQt
 
@@ -18,16 +17,22 @@ class MyWindow(QWidget):
         self.setWindowTitle("House segmenter app")
         self.setGeometry(100, 100, 400, 300)
 
+        # Ustawienie ikonki aplikacji
+        app.setWindowIcon(QIcon("dom.jpg"))
+
         # Tworzenie całego layoutu
         layout = QVBoxLayout()
 
         # Towrzenie title layoutu
         title_layout = QVBoxLayout()
         title_frame = QFrame()
-        title_frame.setStyleSheet("background-color: white;")
         title_frame_layout = QVBoxLayout()
 
-        title_label = QLabel("<font color='navy'><b><font size='+10' face='Georgia'>House Segmenter</font></b></font>")
+        title_label = QLabel("<font color='yellow'><b><font size='+10' face='Georgia' >House Segmenter</font></b></font>")
+        title_label.setStyleSheet(
+            "font-family: verdana; font-size: 15px; color: #404040; font-style: normal; font-weight: bold; "
+            "font-variant: small-caps; text-align: left; letter-spacing: 3px; line-height: 20px; "
+            "text-shadow: 2px 6px 6px rgba(29, 40, 185, 1);")
 
         title_frame_layout.addWidget(title_label, alignment=Qt.AlignHCenter)
         title_frame.setLayout(title_frame_layout)
@@ -60,16 +65,22 @@ class MyWindow(QWidget):
 
         # Tworzenie przycisku "Wybierz obraz"
         button_select_image = QPushButton("Wybierz obraz")
-        button_select_image.setStyleSheet("QPushButton { background-color: navy; color: white; }")
+        button_select_image.setStyleSheet("QPushButton { background-color: #404040; color: white; }")
         button_select_image.clicked.connect(self.select_image)
 
+        # Radioboxy
         hbox = QHBoxLayout()
         # Tworzenie etykiety
         label = QLabel('Wybierz kolorowany element:')
-        # Tworzenie trzech radioboxy
+        label.setStyleSheet("color: white;")
+        # Tworzenie trzech radioboxów
         self.radio1 = QRadioButton('okna')
         self.radio2 = QRadioButton('dach')
         self.radio3 = QRadioButton('okna i dach')
+        # Ustawianie kolorów buttonów
+        self.radio1.setStyleSheet("color: white;")
+        self.radio2.setStyleSheet("color: white;")
+        self.radio3.setStyleSheet("color: white;")
         # Łączenie przycisków z funkcjami
         self.radio1.toggled.connect(self.radio_connect)
         self.radio2.toggled.connect(self.radio_connect)
@@ -83,6 +94,7 @@ class MyWindow(QWidget):
         # Tworzenie slidera
         slider_layout = QHBoxLayout()
         slider_label = QLabel("Współczynnik alfa:")
+        slider_label.setStyleSheet("color: white;")
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setMinimum(0)
         self.slider.setMaximum(100)
@@ -100,6 +112,7 @@ class MyWindow(QWidget):
         # Tworzenie kolorowego wybieraka 1
         color_picker_layout = QHBoxLayout()
         color_picker = QPushButton("Wybierz kolor okien")
+        color_picker.setStyleSheet("QPushButton { background-color: #404040; color: white; }")
         color_picker.clicked.connect(self.choose_color)
         color_picker_layout.addWidget(color_picker)
         color_picker_layout.addWidget(self.color_preview_label)
@@ -113,6 +126,7 @@ class MyWindow(QWidget):
         # Tworzenie kolorowego wybieraka 2
         color_picker_layout2 = QHBoxLayout()
         color_picker2 = QPushButton("Wybierz kolor dachu")
+        color_picker2.setStyleSheet("QPushButton { background-color: #404040; color: white; }")
         color_picker2.clicked.connect(self.choose_color2)
         color_picker_layout2.addWidget(color_picker2)
         color_picker_layout2.addWidget(self.color_preview_label2)
@@ -123,6 +137,7 @@ class MyWindow(QWidget):
 
         # Tworzenie drugiej kolumny przycisków
         button1 = QPushButton("Zapisz obraz")
+        button1.setStyleSheet("QPushButton { background-color: #404040; color: white; }")
         button1.clicked.connect(self.save_image)
 
         # Dodawanie przycisku wyboru obrazu
@@ -138,7 +153,7 @@ class MyWindow(QWidget):
         left_column_layout.addLayout(color_picker_layout2)
         left_column_layout.addWidget(button_submit)
 
-        middle_column_layout.addWidget(QLabel("\n\n\n\n\n\n\n\n"))
+        middle_column_layout.addWidget(QLabel("\n\n\n\n\n\n\n\n\n\n"))
         middle_column_layout.addWidget(image_label3)
         middle_column_layout.addStretch()
 
@@ -155,12 +170,10 @@ class MyWindow(QWidget):
         # Ustawienie layoutu głównego dla okna
         self.setLayout(layout)
 
-        # Połączenie zdarzenia zmiany wartości slidera z aktualizacją podglądu koloru
-        # self.slider.valueChanged.connect(lambda value: self.update_color_preview(QColor("white"), value))
-
         # Połączenie zdarzenia generowania obrazu z funkcją
         button_submit.clicked.connect(self.generate_image)
 
+        # defaultowy obraz do wizualizacji
         self.file_path = './dom.jpg'
 
     def select_image(self):
@@ -204,11 +217,11 @@ class MyWindow(QWidget):
         color_array = [color.red(), color.green(), color.blue()]
         color2 = self.color_preview_label2.palette().color(QPalette.Background)
         color_array2 = [color2.red(), color2.green(), color2.blue()]
-        print(self.file_path, alpha, color_array,color_array2, self.segment)
+        print(self.file_path, alpha, color_array, color_array2, self.segment)
 
         try:
             result_image = main.add_mask(self.file_path, alpha, color_array, color_array2, self.segment)
-
+            # Konwersje
             pil_image = im.fromarray(result_image)
             qimage = ImageQt(pil_image)
             pixmap = QPixmap.fromImage(qimage)
@@ -246,5 +259,6 @@ class MyWindow(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MyWindow()
+    window.setStyleSheet("background-color: #343434;")
     window.show()
     sys.exit(app.exec_())
