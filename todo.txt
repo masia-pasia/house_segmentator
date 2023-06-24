@@ -1,7 +1,0 @@
--gui
--wpisywanie koloru
--wybranie warstwy
--mozliwosc wyboru kanalu alpha (przezroczystosc)
--update zdjecia
--dodanie modelu uczacego
--mozliwosc zapisania
